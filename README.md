@@ -27,7 +27,13 @@ Learn how to combine multiple sensors using a Kalman filter for better robot loc
 
 ### The Key Insight
 
-> **Fuse high-frequency/high-drift sensors (odometry) with low-frequency/no-drift sensors (AprilTags) to get smooth, accurate tracking.**
+> **Fuse LOW-NOISE/HIGH-DRIFT sensors (IMU, odometry) with HIGH-NOISE/LOW-DRIFT sensors (camera/AprilTags) to get smooth, accurate tracking.**
+
+```
+IMU/Odometry:  Low noise ✓   High drift ✗   → Smooth but wanders
+Camera/Vision: High noise ✗  Low drift ✓    → Jumpy but accurate
+FUSED:         Low noise ✓   Low drift ✓    → Best of both!
+```
 
 ## Sensor Characteristics in FRC
 

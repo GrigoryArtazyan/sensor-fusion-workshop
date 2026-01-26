@@ -1,13 +1,15 @@
 """
-Multi-Sensor Fusion Simulation for FRC
-=======================================
-Fuse multiple sensor types: IMU, Odometry, Camera (AprilTags), and LiDAR.
+Sensor Fusion Simulation for FRC
+=================================
+Demonstrates the key concept of sensor fusion:
 
-Each sensor has different characteristics:
-- IMU: Very fast, low noise, but drifts over time
-- Odometry: Fast, low noise, drifts (wheel slip)
-- Camera/AprilTags: Slow, noisy, but NO drift (absolute reference)
-- LiDAR: Medium speed, low noise, no drift (when landmarks visible)
+    LOW NOISE + HIGH DRIFT  (IMU, Odometry)
+              +
+    HIGH NOISE + LOW DRIFT  (Camera/AprilTags)
+              =
+    LOW NOISE + LOW DRIFT   (Best of both!)
+
+The Kalman filter optimally combines these complementary sensors.
 
 Run: python src/simulation.py
 """
@@ -25,29 +27,34 @@ np.random.seed(42)
 SIMULATION_TIME = 150  # Time steps
 ROBOT_VELOCITY = 0.3   # meters per time step
 
+# =============================================
+# LOW NOISE, HIGH DRIFT sensors (motion/predict)
+# =============================================
+
 # IMU (gyro/accelerometer integration)
-# Fast and smooth, but drifts over time
 IMU_ENABLED = True
-IMU_NOISE = 0.01       # Very low noise
-IMU_DRIFT = 0.02       # Accumulates! Try 0.05
+IMU_NOISE = 0.01       # LOW noise - smooth readings
+IMU_DRIFT = 0.03       # HIGH drift - accumulates! Try 0.08
 
 # Wheel Odometry (encoder integration)  
-# Fast, but wheel slip causes drift
 ODOM_ENABLED = True
-ODOM_NOISE = 0.02      # Low noise
-ODOM_DRIFT = 0.03      # Wheel slip drift. Try 0.08
+ODOM_NOISE = 0.02      # LOW noise - precise short-term
+ODOM_DRIFT = 0.04      # HIGH drift - wheel slip. Try 0.1
 
-# Camera / AprilTags (visual odometry)
-# Slower, noisier, but gives absolute position
+# =============================================
+# HIGH NOISE, LOW DRIFT sensors (absolute/update)
+# =============================================
+
+# Camera / AprilTags (visual position)
 CAMERA_ENABLED = True
-CAMERA_NOISE = 0.4     # Higher noise per reading
-CAMERA_INTERVAL = 10   # Updates every N steps. Try 20, 30
+CAMERA_NOISE = 0.5     # HIGH noise - jumpy readings
+CAMERA_INTERVAL = 8    # Slower updates (every N steps)
+# But NO DRIFT - always gives absolute position!
 
-# LiDAR (landmark detection)
-# When available, very accurate
-LIDAR_ENABLED = False  # Try enabling this!
-LIDAR_NOISE = 0.15     # Low noise
-LIDAR_INTERVAL = 8     # Updates every N steps
+# LiDAR (optional - most FRC teams don't use)
+LIDAR_ENABLED = False
+LIDAR_NOISE = 0.15
+LIDAR_INTERVAL = 8
 
 # Kalman filter tuning
 Q = 0.02  # Process noise (trust in motion model)
@@ -323,19 +330,24 @@ if __name__ == "__main__":
     print("EXPERIMENTS TO TRY")
     print(f"{'=' * 55}")
     print("""
-1. ENABLE LIDAR: Set LIDAR_ENABLED = True
-   → Another absolute reference helps!
+The key concept: LOW NOISE + HIGH DRIFT meets HIGH NOISE + LOW DRIFT
 
-2. WORSE DRIFT: Set IMU_DRIFT = 0.08, ODOM_DRIFT = 0.1  
-   → Watch fusion shine with bad encoders
+1. WORSE DRIFT: Set IMU_DRIFT = 0.08, ODOM_DRIFT = 0.12  
+   → IMU/odometry wander badly, but camera saves the day!
 
-3. LOSE VISION: Set CAMERA_INTERVAL = 30
-   → What if you rarely see AprilTags?
+2. LOSE VISION: Set CAMERA_INTERVAL = 25
+   → What happens when AprilTags are rarely visible?
 
-4. CAMERA ONLY: Set IMU_ENABLED = False, ODOM_ENABLED = False
-   → See why you need motion sensors too
+3. NOISIER CAMERA: Set CAMERA_NOISE = 1.0
+   → Very jumpy readings - watch IMU smooth them out
 
-5. TUNE FILTER: Adjust Q (model trust) and R (sensor trust)
+4. IMU ONLY: Set CAMERA_ENABLED = False
+   → See drift accumulate without absolute reference
+
+5. CAMERA ONLY: Set IMU_ENABLED = False, ODOM_ENABLED = False
+   → See why you need smooth motion sensors too
+
+6. TUNE FILTER: Adjust Q (trust motion) and R (trust vision)
 """)
     
     # Plot

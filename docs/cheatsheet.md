@@ -1,5 +1,19 @@
 # Kalman Filter Cheatsheet for FRC
 
+## The Core Concept
+
+```
+LOW NOISE + HIGH DRIFT     HIGH NOISE + LOW DRIFT
+    (IMU, Odometry)    +    (Camera/AprilTags)
+           │                        │
+           └──────────┬─────────────┘
+                      ▼
+            LOW NOISE + LOW DRIFT
+               (Fused result!)
+```
+
+---
+
 ## The Predict-Update Loop
 
 ```

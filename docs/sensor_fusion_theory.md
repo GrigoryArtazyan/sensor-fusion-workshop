@@ -1,5 +1,34 @@
 # Sensor Fusion: Why It Works
 
+## The Core Concept: Complementary Sensor Characteristics
+
+The key to sensor fusion is combining sensors with **opposite weaknesses**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  LOW NOISE + HIGH DRIFT    +    HIGH NOISE + LOW DRIFT  │
+│  ─────────────────────────────────────────────────────  │
+│       IMU / Odometry       +      Camera / AprilTags    │
+│                            ↓                            │
+│              LOW NOISE + LOW DRIFT (Best!)              │
+└─────────────────────────────────────────────────────────┘
+```
+
+| Property | IMU/Odometry | Camera/AprilTags |
+|----------|--------------|------------------|
+| **Noise** | Low (smooth readings) | High (jumpy) |
+| **Drift** | High (accumulates error) | None (absolute reference) |
+| **Update Rate** | Fast (100+ Hz) | Slower (30-90 Hz) |
+| **Availability** | Always | Line-of-sight only |
+
+**Why this works:** Each sensor compensates for the other's weakness!
+- IMU drifting? → Camera pulls it back
+- Camera noisy? → IMU smooths it out
+- Camera blocked? → IMU keeps tracking
+- IMU error accumulated? → Next camera reading resets it
+
+---
+
 ## What is Filtering?
 
 In signal processing, **filtering** means extracting useful information from noisy data. Common filtering approaches:
