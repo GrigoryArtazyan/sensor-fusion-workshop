@@ -44,12 +44,14 @@ P = (1 - K) × P        ← uncertainty shrinks
 
 ## FRC Sensor Characteristics
 
-| Sensor | Noise | Drift | Use For |
-|--------|-------|-------|---------|
-| Encoders | Low | High (slip) | Predict step |
-| Gyro | Low | Medium | Heading |
-| AprilTags | Medium | None | Update step |
-| Limelight | Medium | None | Update step |
+| Sensor | Noise | Drift | Rate | Role in Fusion |
+|--------|-------|-------|------|----------------|
+| **IMU/Gyro** | Very Low | High | 200+ Hz | Predict (motion) |
+| **Encoders** | Low | High (slip) | 50-100 Hz | Predict (motion) |
+| **AprilTags** | Medium | None | 30-90 Hz | Update (absolute) |
+| **LiDAR** | Low | None | 10-40 Hz | Update (absolute) |
+
+**Key insight:** Fuse drifting sensors (IMU, encoders) with absolute sensors (AprilTags, LiDAR)
 
 ## WPILib Standard Deviations
 
