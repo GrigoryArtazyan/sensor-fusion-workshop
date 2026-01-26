@@ -34,12 +34,12 @@ ROBOT_VELOCITY = 0.3   # meters per time step
 # IMU (gyro/accelerometer integration)
 IMU_ENABLED = True
 IMU_NOISE = 0.01       # LOW noise - smooth readings
-IMU_DRIFT = 0.03       # HIGH drift - accumulates! Try 0.08
+IMU_DRIFT = 0.06       # HIGH drift - accumulates over time
 
 # Wheel Odometry (encoder integration)  
 ODOM_ENABLED = True
 ODOM_NOISE = 0.02      # LOW noise - precise short-term
-ODOM_DRIFT = 0.04      # HIGH drift - wheel slip. Try 0.1
+ODOM_DRIFT = 0.08      # HIGH drift - wheel slip on carpet
 
 # =============================================
 # HIGH NOISE, LOW DRIFT sensors (absolute/update)

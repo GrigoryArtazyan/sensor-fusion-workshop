@@ -53,7 +53,15 @@ In FRC, accurate robot positioning is critical for autonomous routines and game 
 git clone https://github.com/GrigoryArtazyan/sensor-fusion-workshop.git
 cd sensor-fusion-workshop
 pip install -r requirements.txt
+
+# Run the main simulation
 python src/simulation.py
+
+# Play the interactive localization game!
+python src/localization_game.py
+
+# Watch the particle filter demo
+python src/particle_demo.py
 ```
 
 ## Repository Structure
@@ -61,11 +69,14 @@ python src/simulation.py
 ```
 sensor-fusion-workshop/
 ├── src/
-│   ├── kalman_filter.py   # Kalman filter implementation
-│   └── simulation.py      # Interactive demo
+│   ├── kalman_filter.py      # Kalman filter implementation
+│   ├── simulation.py         # Multi-sensor fusion demo
+│   ├── localization_game.py  # Interactive game - move robot with arrow keys!
+│   └── particle_demo.py      # Particle filter visualization
 ├── docs/
-│   ├── cheatsheet.md      # Quick reference
-│   └── frc_integration.md # WPILib integration guide
+│   ├── cheatsheet.md         # Quick reference
+│   ├── sensor_fusion_theory.md # Why fusion works
+│   └── frc_integration.md    # WPILib code examples
 ├── requirements.txt
 └── README.md
 ```
