@@ -2,7 +2,34 @@
 
 Learn how to combine multiple sensors using a Kalman filter for better robot localization.
 
-## Why Sensor Fusion?
+## What is Sensor Fusion?
+
+**Sensor fusion** is a filtering technique that combines data from multiple sensors to produce a more accurate estimate than any single sensor could provide alone.
+
+### Why Does Combining Sensors Improve Accuracy?
+
+1. **Complementary strengths**: Different sensors fail in different ways
+   - Odometry is smooth but drifts over time
+   - AprilTags have no drift but are noisy and intermittent
+   - Together: smooth tracking WITH drift correction
+
+2. **Redundancy**: When one sensor fails, others fill in
+   - Can't see AprilTags? Odometry keeps tracking
+   - Wheel slip? AprilTags correct the error
+
+3. **Noise cancellation**: Independent noise sources partially cancel out
+   - If sensor A reads high and sensor B reads low, the average is closer to truth
+   - Mathematically: combining N independent measurements reduces variance by √N
+
+4. **Different time scales**: Some sensors are better short-term vs long-term
+   - IMU/Odometry: Excellent for millisecond-to-second tracking
+   - Vision: Excellent for correcting accumulated error over seconds-to-minutes
+
+### The Key Insight
+
+> **Fuse high-frequency/high-drift sensors (odometry) with low-frequency/no-drift sensors (AprilTags) to get smooth, accurate tracking.**
+
+## Sensor Characteristics in FRC
 
 In FRC, accurate robot positioning is critical for autonomous routines and game piece alignment. Single sensors have limitations:
 
