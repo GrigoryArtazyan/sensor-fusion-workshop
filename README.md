@@ -1,51 +1,124 @@
-# Sensor Fusion Workshop
+# Sensor Fusion Workshop for FRC
 
-A hands-on workshop on sensor fusion and Kalman filtering for robotics teams.
+Learn how to combine multiple sensors using a Kalman filter for better robot localization.
+
+## Why Sensor Fusion?
+
+In FRC, accurate robot positioning is critical for autonomous routines and game piece alignment. Single sensors have limitations:
+
+| Sensor | Strengths | Weaknesses |
+|--------|-----------|------------|
+| **IMU/Gyro** | Fast, smooth, precise short-term | Drifts over time |
+| **AprilTags** | Absolute field position, no drift | Noisy, slower, requires line-of-sight |
+| **Wheel Odometry** | Always available, fast | Wheel slip, accumulates error |
+
+**Solution**: Fuse them together using a Kalman filter!
 
 ## Quick Start
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/GrigoryArtazyan/sensor-fusion-workshop.git
+cd sensor-fusion-workshop
+pip install -r requirements.txt
+python src/simulation.py
+```
 
-2. Run the simulation:
-   ```bash
-   python sensor_fusion_simulation.py
-   ```
+## Repository Structure
 
-3. Experiment with parameters at the top of `sensor_fusion_simulation.py`
+```
+sensor-fusion-workshop/
+├── src/
+│   ├── kalman_filter.py   # Kalman filter implementation
+│   └── simulation.py      # Interactive demo
+├── docs/
+│   ├── cheatsheet.md      # Quick reference
+│   └── frc_integration.md # WPILib integration guide
+├── requirements.txt
+└── README.md
+```
 
-## Workshop Files
+## Workshop Outline (1 hour)
 
-| File | Description |
-|------|-------------|
-| `kalman_filter.py` | Well-commented Kalman filter implementation |
-| `sensor_fusion_simulation.py` | Main simulation with visualization |
-| `concepts_cheatsheet.md` | One-page reference with formulas |
-| `workshop_slides.md` | Presentation outline (20 slides) |
+### Part 1: Why Sensor Fusion? (10 min)
+- Single sensor limitations
+- Complementary sensor characteristics
+- Real FRC examples
 
-## What You'll Learn
+### Part 2: The Kalman Filter (15 min)
+- Predict-update loop
+- Brief math overview
+- Tuning Q and R parameters
 
-- Why combining sensors improves accuracy
-- How the Kalman filter works (predict-update loop)
-- Brief math behind the filter
-- Hands-on tuning and experimentation
+### Part 3: Hands-on Simulation (25 min)
+- Run the Python simulation
+- Experiment with parameters
+- See fusion outperform single sensors
+
+### Part 4: FRC Integration (10 min)
+- WPILib pose estimation classes
+- AprilTags + odometry fusion
+- Next steps for your robot
 
 ## Key Concepts
 
-**Sensor Fusion:** Combining high-noise/low-drift sensors (camera) with low-noise/high-drift sensors (IMU) to get smooth AND accurate estimates.
+### The Kalman Filter Loop
 
-**Kalman Filter:** An optimal estimation algorithm that automatically balances trust between predictions and measurements based on their uncertainties.
+```
+┌──────────┐         ┌──────────┐
+│ PREDICT  │ ──────► │  UPDATE  │
+│ (Odometry)│         │(AprilTag)│
+└──────────┘         └──────────┘
+      ▲                    │
+      └────────────────────┘
+```
 
-## Experiments to Try
+1. **Predict**: Use wheel odometry/IMU → uncertainty grows
+2. **Update**: See AprilTag → uncertainty shrinks
 
-1. Increase `IMU_DRIFT_RATE` to see how fusion handles worse drift
-2. Increase `CAMERA_UPDATE_INTERVAL` to see uncertainty grow between updates
-3. Tune `KF_PROCESS_NOISE` (Q) and `KF_MEASUREMENT_NOISE` (R) to find the best balance
+### Core Equations
 
-## Resources
+```
+Kalman Gain:  K = P / (P + R)
+State Update: x = x + K × (measurement - x)
+```
 
-- [kalmanfilter.net](https://www.kalmanfilter.net) - Visual explanations
-- filterpy library - Production Python implementation
-- "Probabilistic Robotics" book - Deep dive
+- **K ≈ 1**: Trust the measurement (AprilTag visible, good pose)
+- **K ≈ 0**: Trust the prediction (no tags visible, rely on odometry)
+
+## Exercises
+
+Modify `src/simulation.py`:
+
+1. **Increase drift** (`IMU_DRIFT = 0.1`) - simulates encoder slip
+2. **Reduce camera updates** (`CAMERA_INTERVAL = 20`) - like losing AprilTag sight
+3. **Tune the filter** - adjust Q and R for best performance
+
+## FRC Resources
+
+- [WPILib Pose Estimation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html)
+- [AprilTag Documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html)
+- [Odometry Classes](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/index.html)
+
+## WPILib Integration
+
+WPILib provides built-in pose estimators that do sensor fusion for you:
+
+```java
+// Java example
+SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
+    kinematics,
+    gyro.getRotation2d(),
+    modulePositions,
+    initialPose,
+    stateStdDevs,    // Trust in odometry (like Q)
+    visionStdDevs    // Trust in vision (like R)
+);
+
+// In periodic: add odometry
+poseEstimator.update(gyro.getRotation2d(), modulePositions);
+
+// When AprilTag detected: add vision measurement
+poseEstimator.addVisionMeasurement(visionPose, timestamp);
+```
+
+The `stateStdDevs` and `visionStdDevs` are like our Q and R parameters!

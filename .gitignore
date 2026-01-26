@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *.so
-.Python
 env/
 venv/
 .venv/
@@ -11,12 +10,9 @@ venv/
 .idea/
 .vscode/
 *.swp
-*.swo
 
 # OS
 .DS_Store
-Thumbs.db
 
-# Output files
-*.png
-sensor_fusion_results.png
+# Output
+results.png
