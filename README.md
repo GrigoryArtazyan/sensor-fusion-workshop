@@ -2,105 +2,137 @@
 
 > **A hands-on workshop for VISST School robotics students**
 
-Learn how robots combine multiple sensors to know where they are - even when each sensor is imperfect!
+Learn how robots combine multiple sensors to know where they are!
 
-![Sensor Fusion Simulation](images/simulation.png)
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Kalman_filter_animation.gif/220px-Kalman_filter_animation.gif" alt="Kalman Filter Animation" width="300">
+  <br>
+  <em>Kalman filter tracking a moving object through noisy measurements</em>
+</p>
 
-## The Big Idea
+## The Problem
 
-Every sensor has weaknesses:
+Every sensor lies a little bit:
 
-| Sensor | Good At | Bad At |
-|--------|---------|--------|
-| **IMU/Encoders** | Smooth, fast readings | Drifts over time |
-| **Camera/AprilTags** | Accurate position | Noisy, not always visible |
+<p align="center">
+  <img src="https://miro.medium.com/v2/resize:fit:1400/1*QhPC5BPn2G_ielY9FR0YCw.png" alt="Sensor Fusion Concept" width="500">
+</p>
 
-**Solution: Combine them!**
+| Sensor | Strength | Weakness |
+|--------|----------|----------|
+| **IMU/Encoders** | Smooth, fast | Drifts over time |
+| **Camera/AprilTags** | Accurate position | Noisy, sometimes blocked |
+
+## The Solution: Sensor Fusion
+
+Combine them to get the best of both!
 
 ```
-Low noise + High drift   +   High noise + No drift   =   Best of both!
-    (IMU/Encoders)              (Camera/AprilTags)
+Low noise + High drift    +    High noise + No drift    =    Best estimate!
+     (IMU)                        (Camera)
 ```
+
+<p align="center">
+  <img src="images/simulation.png" alt="Fusion Demo" width="600">
+  <br>
+  <em>Our simulation: Fusion (red) beats IMU alone (cyan)</em>
+</p>
+
+## The Kalman Filter
+
+A simple predict-update loop:
+
+```
+┌──────────────┐              ┌──────────────┐
+│   PREDICT    │  ─────────►  │    UPDATE    │
+│  Use IMU to  │              │ Correct with │
+│  estimate    │              │   camera     │
+│ (uncertainty │              │ (uncertainty │
+│   grows)     │              │   shrinks)   │
+└──────────────┘              └──────────────┘
+        ▲                            │
+        └────────────────────────────┘
+```
+
+### The Math (Brief!)
+
+```python
+# Predict: move estimate, uncertainty grows
+x = x + velocity
+P = P + Q
+
+# Update: correct with measurement, uncertainty shrinks  
+K = P / (P + R)           # Kalman gain (0 to 1)
+x = x + K * (measurement - x)
+P = P * (1 - K)
+```
+
+**K (Kalman gain)** decides who to trust:
+- K ≈ 1 → Trust sensor more
+- K ≈ 0 → Trust prediction more
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/GrigoryArtazyan/sensor-fusion-workshop.git
 cd sensor-fusion-workshop
-pip install -r requirements.txt
+pip install numpy matplotlib
 
-# Try these demos:
-python src/simulation.py        # See fusion beat single sensors
-python src/localization_game.py # Control a robot, watch sensors work
-python src/particle_demo.py     # Visualize particle filter
+python src/simulation.py        # See fusion in action
+python src/localization_game.py # Interactive game!
+python src/particle_demo.py     # Particle filter demo
 ```
-
-## What's Included
-
-| File | Description |
-|------|-------------|
-| `src/simulation.py` | Multi-sensor fusion demo with plots |
-| `src/localization_game.py` | Interactive game - move with arrow keys! |
-| `src/particle_demo.py` | Animated particle filter visualization |
-| `src/kalman_filter.py` | Simple Kalman filter implementation |
-| `docs/cheatsheet.md` | Quick reference with formulas |
-| `docs/frc_integration.md` | WPILib code examples for FRC robots |
 
 ## Workshop Outline (1 hour)
 
-1. **Why Sensor Fusion?** (10 min) - Why combining sensors works
-2. **The Kalman Filter** (15 min) - Predict-update loop, brief math
-3. **Hands-on Demos** (25 min) - Run simulations, experiment
-4. **FRC Integration** (10 min) - How to use this on your robot
+| Part | Topic | Time |
+|------|-------|------|
+| 1 | Why Sensor Fusion? | 10 min |
+| 2 | Kalman Filter basics | 15 min |
+| 3 | Hands-on demos | 25 min |
+| 4 | FRC integration | 10 min |
 
-## The Kalman Filter in 30 Seconds
+## Files
 
 ```
-┌──────────┐         ┌──────────┐
-│ PREDICT  │ ──────► │  UPDATE  │
-│  (IMU)   │         │ (Camera) │
-└──────────┘         └──────────┘
-      ▲                    │
-      └────────────────────┘
+src/
+├── simulation.py        # Simple fusion demo (60 lines!)
+├── localization_game.py # Move robot with arrow keys
+├── particle_demo.py     # Watch particles converge
+└── kalman_filter.py     # Reusable filter class
+
+docs/
+├── cheatsheet.md        # Quick reference
+└── frc_integration.md   # WPILib code examples
 ```
 
-1. **Predict**: Use motion sensors → uncertainty grows
-2. **Update**: See landmark → uncertainty shrinks
-3. Repeat forever!
+## For FRC Robots
 
-## Try These Experiments
-
-In `src/simulation.py`, change these values and re-run:
-
-```python
-IMU_DRIFT = 0.12      # Make drift worse - watch fusion save the day!
-CAMERA_INTERVAL = 25  # See fewer AprilTags - what happens?
-CAMERA_NOISE = 1.0    # Noisier camera - IMU smooths it out
-```
-
-## For FRC Teams
-
-WPILib has built-in sensor fusion:
+WPILib does sensor fusion for you:
 
 ```java
-SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
-    kinematics, gyro.getRotation2d(), positions, startPose,
-    VecBuilder.fill(0.1, 0.1, 0.1),  // Trust in odometry
-    VecBuilder.fill(0.5, 0.5, 0.5)   // Trust in vision
-);
+// Create pose estimator
+SwerveDrivePoseEstimator estimator = new SwerveDrivePoseEstimator(...);
 
-// Every loop: update with odometry
-poseEstimator.update(gyro.getRotation2d(), positions);
+// Every loop: predict with odometry
+estimator.update(gyro.getRotation2d(), modulePositions);
 
-// When you see an AprilTag: add vision
-poseEstimator.addVisionMeasurement(visionPose, timestamp);
+// When AprilTag visible: update with vision
+estimator.addVisionMeasurement(visionPose, timestamp);
 ```
 
-## Resources
+## Experiment!
 
-- [WPILib Pose Estimation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html)
-- [AprilTag Docs](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html)
+Change these in `src/simulation.py`:
+
+```python
+IMU_DRIFT = 0.1       # Worse drift → fusion helps more
+CAMERA_INTERVAL = 20  # Fewer updates → watch uncertainty grow
+CAMERA_NOISE = 1.0    # Noisier → IMU smooths it out
+```
 
 ---
 
-*Workshop materials by Grigory Artazyan for VISST School*
+<p align="center">
+  <em>Workshop materials for VISST School by Grigory Artazyan</em>
+</p>
