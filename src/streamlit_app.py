@@ -256,12 +256,14 @@ with tab3:
     **Combined**: Low noise + No drift = Best of both!
     """)
     
-    import os
-    img_path = os.path.join(os.path.dirname(__file__), "..", "images", "localization_Gemini_Generate.png")
-    if os.path.exists(img_path):
-        st.image(img_path, caption="Sensor Fusion Visualization")
-    else:
-        st.info("Visualization image not found - run from project root directory")
+    # Show concept diagram instead of relying on local image
+    st.markdown("""
+    ```
+    Camera:   ▓▓▓░░▓▓▓░░▓▓▓░░▓▓▓░░▓▓▓  (noisy but centered on truth)
+    IMU:      ████████████░░░░░░░░░░░░  (smooth but drifts away)  
+    Fused:    ████████████████████████  (smooth AND accurate!)
+    ```
+    """)
     
     st.markdown("""
     ### The Kalman Filter Loop
@@ -307,5 +309,5 @@ Learn how robots combine multiple sensors to know where they are!
 
 ---
 
-*by Grigory Artazyan*
+*by Grigory Artazyan and Claude*
 """)
