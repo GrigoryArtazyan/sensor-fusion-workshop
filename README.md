@@ -45,10 +45,23 @@ LOW NOISE + HIGH DRIFT      HIGH NOISE + NO DRIFT
                (Best of both!)
 ```
 
+### See It In Action
+
+<p align="center">
+  <img src="images/localization_Gemini_Generate.png" alt="Sensor Fusion Visualization" width="650">
+</p>
+
+**What this shows:**
+- 🔵 **Blue (Camera)**: High noise, but centered on truth - no drift!
+- 🔴 **Red (IMU)**: Smooth line, but drifts away from truth over time
+- 🟢 **Green (Fused)**: Combines both - smooth AND accurate!
+
+The Kalman filter uses the IMU for smooth tracking, then "snaps back" to the camera readings to prevent drift.
+
 <p align="center">
   <img src="images/simulation.png" alt="Fusion Demo" width="600">
   <br>
-  <em>Our simulation: Fusion (red) beats IMU alone (cyan)</em>
+  <em>Our Python simulation showing fusion beating odometry alone</em>
 </p>
 
 ## The Kalman Filter
