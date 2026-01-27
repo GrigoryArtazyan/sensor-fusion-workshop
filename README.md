@@ -131,5 +131,5 @@ python src/simulation.py
 
 <p align="center">
   <em>Workshop materials for VISST School</em><br>
-  <em>by Grigory Artazyan</em>
+  <em>by Grigory Artazyan & Claude</em>
 </p>

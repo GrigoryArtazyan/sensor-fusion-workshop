@@ -2,6 +2,7 @@
 Sensor Fusion Interactive Demo
 ==============================
 A Streamlit app to explore sensor fusion, Kalman filtering, and particle filters.
+No external APIs - runs completely offline!
 
 Run: streamlit run src/streamlit_app.py
 """
@@ -19,7 +20,7 @@ class KalmanFilter:
         self.P = 1.0
         self.Q = Q
         self.R = R
-        self.history = {'x': [], 'P': [], 'K': []}
+        self.history_P = []
     
     def predict(self, velocity):
         self.x += velocity
@@ -29,12 +30,10 @@ class KalmanFilter:
         K = self.P / (self.P + self.R)
         self.x += K * (measurement - self.x)
         self.P *= (1 - K)
-        self.history['K'].append(K)
         return K
     
     def record(self):
-        self.history['x'].append(self.x)
-        self.history['P'].append(self.P)
+        self.history_P.append(self.P)
 
 # === PARTICLE FILTER CLASS ===
 class ParticleFilter:
@@ -54,12 +53,12 @@ class ParticleFilter:
     def update(self, meas_x, meas_y, sensor_noise):
         distances = np.sqrt((self.particles_x - meas_x)**2 + (self.particles_y - meas_y)**2)
         self.weights = np.exp(-distances**2 / (2 * sensor_noise**2))
-        self.weights /= np.sum(self.weights)
+        self.weights /= np.sum(self.weights) + 1e-10
     
     def resample(self):
         indices = np.random.choice(self.n, size=self.n, p=self.weights)
-        self.particles_x = self.particles_x[indices] + np.random.normal(0, 0.1, self.n)
-        self.particles_y = self.particles_y[indices] + np.random.normal(0, 0.1, self.n)
+        self.particles_x = self.particles_x[indices] + np.random.normal(0, 0.05, self.n)
+        self.particles_y = self.particles_y[indices] + np.random.normal(0, 0.05, self.n)
         self.weights = np.ones(self.n) / self.n
     
     def estimate(self):
@@ -67,208 +66,161 @@ class ParticleFilter:
 
 # === MAIN APP ===
 st.title("🤖 Sensor Fusion Workshop")
-st.markdown("**Interactive demos for VISST School**")
+st.markdown("**Interactive demos for VISST School** - No internet required!")
 
-tab1, tab2, tab3 = st.tabs(["📊 Kalman Filter", "🎯 Particle Filter", "🔀 Sensor Fusion"])
+tab1, tab2, tab3 = st.tabs(["📊 Kalman Filter", "🎯 Particle Filter", "📚 Concepts"])
 
 # === TAB 1: KALMAN FILTER ===
 with tab1:
     st.header("Kalman Filter Demo")
-    st.markdown("""
-    The Kalman filter combines **predictions** (from motion) with **measurements** (from sensors).
-    
-    **Key insight**: It automatically balances trust based on uncertainty!
-    """)
+    st.markdown("Adjust parameters and see results instantly!")
     
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("Parameters")
-        kf_steps = st.slider("Time steps", 20, 200, 100, key="kf_steps")
-        kf_Q = st.slider("Q (process noise)", 0.01, 0.5, 0.1, 0.01, 
-                         help="Higher = trust measurements more")
-        kf_R = st.slider("R (measurement noise)", 0.1, 2.0, 0.5, 0.1,
-                         help="Higher = trust predictions more")
-        odom_drift = st.slider("Odometry drift", 0.01, 0.2, 0.08, 0.01)
-        camera_noise = st.slider("Camera noise", 0.1, 1.5, 0.4, 0.1)
-        camera_interval = st.slider("Camera update interval", 1, 30, 8)
-        
-        if st.button("Run Simulation", key="kf_run"):
-            st.session_state.kf_run = True
+        st.subheader("⚙️ Parameters")
+        kf_steps = st.slider("Time steps", 50, 200, 100)
+        odom_drift = st.slider("Odometry drift", 0.02, 0.15, 0.08, 0.01)
+        camera_noise = st.slider("Camera noise", 0.1, 1.0, 0.4, 0.1)
+        camera_interval = st.slider("Camera interval", 3, 25, 8)
+        kf_Q = st.slider("Q (process noise)", 0.01, 0.3, 0.05, 0.01)
+        kf_R = st.slider("R (measurement noise)", 0.1, 1.0, 0.3, 0.1)
     
     with col2:
-        if st.session_state.get('kf_run', False):
-            np.random.seed(42)
-            
-            # Ground truth
-            truth = np.cumsum(np.full(kf_steps, 0.3) + np.random.normal(0, 0.01, kf_steps))
-            
-            # Odometry (drifts)
-            odom_drift_acc = np.cumsum(np.random.normal(0, odom_drift, kf_steps))
-            odom = truth + odom_drift_acc
-            
-            # Camera (noisy, intermittent)
-            camera = np.full(kf_steps, np.nan)
-            for i in range(0, kf_steps, camera_interval):
-                camera[i] = truth[i] + np.random.normal(0, camera_noise)
-            
-            # Kalman filter
-            kf = KalmanFilter(kf_Q, kf_R)
-            fused = []
-            for i in range(kf_steps):
-                if i > 0:
-                    kf.predict(odom[i] - odom[i-1])
-                if not np.isnan(camera[i]):
-                    kf.update(camera[i])
-                kf.record()
-                fused.append(kf.x)
-            fused = np.array(fused)
-            
-            # Plot
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
-            
-            ax1.plot(truth, 'k-', lw=2, label='Ground Truth')
-            ax1.plot(odom, 'b-', alpha=0.6, label='Odometry (drifts)')
-            ax1.scatter(np.where(~np.isnan(camera))[0], camera[~np.isnan(camera)], 
-                       c='g', s=40, marker='^', label='Camera', zorder=5)
-            ax1.plot(fused, 'r-', lw=2, label='Kalman Fused')
-            ax1.set_ylabel('Position')
-            ax1.legend(loc='upper left')
-            ax1.set_title('Position Tracking')
-            ax1.grid(alpha=0.3)
-            
-            ax2.fill_between(range(kf_steps), 0, kf.history['P'], alpha=0.3, color='purple')
-            ax2.plot(kf.history['P'], 'purple', label='Uncertainty')
-            ax2.set_xlabel('Time Step')
-            ax2.set_ylabel('Uncertainty')
-            ax2.set_title('Uncertainty Over Time (grows during predict, shrinks during update)')
-            ax2.legend()
-            ax2.grid(alpha=0.3)
-            
-            plt.tight_layout()
-            st.pyplot(fig)
-            
-            # Metrics
-            odom_rmse = np.sqrt(np.mean((odom - truth)**2))
-            fused_rmse = np.sqrt(np.mean((fused - truth)**2))
-            improvement = (1 - fused_rmse / odom_rmse) * 100
-            
-            col_a, col_b, col_c = st.columns(3)
-            col_a.metric("Odometry RMSE", f"{odom_rmse:.3f} m")
-            col_b.metric("Fused RMSE", f"{fused_rmse:.3f} m")
-            col_c.metric("Improvement", f"{improvement:.1f}%", delta=f"{improvement:.1f}%")
+        # Run simulation with current parameters
+        np.random.seed(42)
+        
+        # Ground truth
+        truth = np.cumsum(np.full(kf_steps, 0.3) + np.random.normal(0, 0.01, kf_steps))
+        
+        # Odometry (drifts)
+        odom = truth + np.cumsum(np.random.normal(0, odom_drift, kf_steps))
+        
+        # Camera (noisy, intermittent)
+        camera = np.full(kf_steps, np.nan)
+        for i in range(0, kf_steps, camera_interval):
+            camera[i] = truth[i] + np.random.normal(0, camera_noise)
+        
+        # Kalman filter
+        kf = KalmanFilter(kf_Q, kf_R)
+        fused = []
+        for i in range(kf_steps):
+            if i > 0:
+                kf.predict(odom[i] - odom[i-1])
+            if not np.isnan(camera[i]):
+                kf.update(camera[i])
+            kf.record()
+            fused.append(kf.x)
+        fused = np.array(fused)
+        
+        # Plot
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+        
+        ax1.plot(truth, 'k-', lw=2, label='Ground Truth')
+        ax1.plot(odom, 'b-', alpha=0.5, label='Odometry (drifts)')
+        cam_idx = np.where(~np.isnan(camera))[0]
+        ax1.scatter(cam_idx, camera[cam_idx], c='g', s=50, marker='^', label='Camera', zorder=5)
+        ax1.plot(fused, 'r-', lw=2, label='Fused')
+        ax1.set_ylabel('Position (m)')
+        ax1.legend(loc='upper left')
+        ax1.set_title('Sensor Fusion: Odometry + Camera → Best Estimate')
+        ax1.grid(alpha=0.3)
+        
+        ax2.fill_between(range(kf_steps), 0, kf.history_P, alpha=0.4, color='purple')
+        ax2.set_xlabel('Time Step')
+        ax2.set_ylabel('Uncertainty')
+        ax2.set_title('Uncertainty: grows during predict, shrinks during update')
+        ax2.grid(alpha=0.3)
+        
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close()
+        
+        # Metrics
+        odom_rmse = np.sqrt(np.mean((odom - truth)**2))
+        fused_rmse = np.sqrt(np.mean((fused - truth)**2))
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Odometry RMSE", f"{odom_rmse:.2f} m")
+        c2.metric("Fused RMSE", f"{fused_rmse:.2f} m")
+        c3.metric("Improvement", f"{(1 - fused_rmse/odom_rmse)*100:.0f}%")
 
 # === TAB 2: PARTICLE FILTER ===
 with tab2:
     st.header("Particle Filter Demo")
-    st.markdown("""
-    Particle filters represent uncertainty with many "guesses" (particles).
-    
-    **Process**: Predict → Measure → Weight → Resample → Repeat
-    """)
+    st.markdown("Watch particles converge to the true position!")
     
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("Parameters")
-        n_particles = st.slider("Number of particles", 50, 500, 200, 50)
-        pf_steps = st.slider("Simulation steps", 10, 100, 50)
-        motion_noise = st.slider("Motion noise", 0.01, 0.3, 0.1, 0.01)
-        sensor_noise = st.slider("Sensor noise", 0.1, 1.0, 0.3, 0.1)
-        
-        if st.button("Run Particle Filter", key="pf_run"):
-            st.session_state.pf_run = True
+        st.subheader("⚙️ Parameters")
+        n_particles = st.slider("Particles", 50, 400, 150, 50)
+        pf_steps = st.slider("Steps", 20, 80, 40)
+        motion_noise = st.slider("Motion noise", 0.05, 0.25, 0.1, 0.01)
+        pf_sensor_noise = st.slider("Sensor noise (PF)", 0.1, 0.8, 0.3, 0.05)
     
     with col2:
-        if st.session_state.get('pf_run', False):
-            np.random.seed(42)
-            field_size = 10.0
+        np.random.seed(123)
+        field_size = 10.0
+        
+        robot_x, robot_y = 5.0, 5.0
+        traj_x, traj_y = [robot_x], [robot_y]
+        
+        pf = ParticleFilter(n_particles, field_size)
+        est_x, est_y = [], []
+        
+        for step in range(pf_steps):
+            dx = 0.12 * np.cos(step * 0.15)
+            dy = 0.12 * np.sin(step * 0.15)
+            robot_x = np.clip(robot_x + dx, 1, field_size - 1)
+            robot_y = np.clip(robot_y + dy, 1, field_size - 1)
+            traj_x.append(robot_x)
+            traj_y.append(robot_y)
             
-            # True robot trajectory (moves in a pattern)
-            robot_x, robot_y = 5.0, 5.0
-            trajectory_x, trajectory_y = [robot_x], [robot_y]
+            pf.predict(dx, dy, motion_noise)
+            mx = robot_x + np.random.normal(0, pf_sensor_noise)
+            my = robot_y + np.random.normal(0, pf_sensor_noise)
+            pf.update(mx, my, pf_sensor_noise)
+            pf.resample()
             
-            # Initialize particle filter
-            pf = ParticleFilter(n_particles, field_size)
-            estimates_x, estimates_y = [], []
-            
-            # Simulate
-            for step in range(pf_steps):
-                # Robot moves
-                dx = 0.15 * np.cos(step * 0.2)
-                dy = 0.15 * np.sin(step * 0.2)
-                robot_x = np.clip(robot_x + dx, 0.5, field_size - 0.5)
-                robot_y = np.clip(robot_y + dy, 0.5, field_size - 0.5)
-                trajectory_x.append(robot_x)
-                trajectory_y.append(robot_y)
-                
-                # Particle filter steps
-                pf.predict(dx, dy, motion_noise)
-                meas_x = robot_x + np.random.normal(0, sensor_noise)
-                meas_y = robot_y + np.random.normal(0, sensor_noise)
-                pf.update(meas_x, meas_y, sensor_noise)
-                pf.resample()
-                
-                est_x, est_y = pf.estimate()
-                estimates_x.append(est_x)
-                estimates_y.append(est_y)
-            
-            # Plot final state
-            fig, ax = plt.subplots(figsize=(8, 8))
-            
-            # Particles
-            ax.scatter(pf.particles_x, pf.particles_y, s=pf.weights*5000+5, 
-                      c='blue', alpha=0.3, label='Particles')
-            
-            # Trajectory
-            ax.plot(trajectory_x, trajectory_y, 'k--', alpha=0.5, label='True path')
-            ax.plot(estimates_x, estimates_y, 'r-', lw=2, alpha=0.7, label='Estimated path')
-            
-            # Current positions
-            ax.plot(robot_x, robot_y, 'go', markersize=15, label='True position')
-            ax.plot(estimates_x[-1], estimates_y[-1], 'rs', markersize=12, label='Estimate')
-            
-            ax.set_xlim(0, field_size)
-            ax.set_ylim(0, field_size)
-            ax.set_aspect('equal')
-            ax.legend(loc='upper right')
-            ax.set_title(f'Particle Filter with {n_particles} particles')
-            ax.grid(alpha=0.3)
-            
-            st.pyplot(fig)
-            
-            # Error metric
-            final_error = np.sqrt((estimates_x[-1] - robot_x)**2 + (estimates_y[-1] - robot_y)**2)
-            st.metric("Final Position Error", f"{final_error:.3f} m")
+            ex, ey = pf.estimate()
+            est_x.append(ex)
+            est_y.append(ey)
+        
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.scatter(pf.particles_x, pf.particles_y, s=20, c='blue', alpha=0.4, label='Particles')
+        ax.plot(traj_x, traj_y, 'k--', alpha=0.5, lw=1, label='True path')
+        ax.plot(est_x, est_y, 'r-', lw=2, label='Estimated path')
+        ax.plot(robot_x, robot_y, 'go', markersize=15, label='True position', zorder=10)
+        ax.plot(est_x[-1], est_y[-1], 'rs', markersize=12, label='Estimate', zorder=10)
+        ax.set_xlim(0, field_size)
+        ax.set_ylim(0, field_size)
+        ax.set_aspect('equal')
+        ax.legend(loc='upper right')
+        ax.set_title(f'Particle Filter Localization ({n_particles} particles)')
+        ax.grid(alpha=0.3)
+        st.pyplot(fig)
+        plt.close()
+        
+        error = np.sqrt((est_x[-1] - robot_x)**2 + (est_y[-1] - robot_y)**2)
+        st.metric("Final Error", f"{error:.3f} m")
 
-# === TAB 3: SENSOR FUSION COMPARISON ===
+# === TAB 3: CONCEPTS ===
 with tab3:
-    st.header("Sensor Fusion: The Key Concept")
+    st.header("Sensor Fusion Concepts")
     
+    st.subheader("Why Combine Sensors?")
     st.markdown("""
-    ### Why Sensor Fusion Works
-    
-    | Sensor Type | Noise | Drift | Example |
-    |-------------|-------|-------|---------|
-    | **Motion sensors** | Low | High | IMU, Encoders |
+    | Sensor | Noise | Drift | Example |
+    |--------|-------|-------|---------|
+    | **Motion sensors** | Low | High | IMU, Wheel encoders |
     | **Position sensors** | High | None | Camera, AprilTags |
     
-    **Combined**: Low noise + No drift = Best of both!
+    **Result**: Low noise + No drift = Best of both!
     """)
     
-    # Show concept diagram instead of relying on local image
-    st.markdown("""
-    ```
-    Camera:   ▓▓▓░░▓▓▓░░▓▓▓░░▓▓▓░░▓▓▓  (noisy but centered on truth)
-    IMU:      ████████████░░░░░░░░░░░░  (smooth but drifts away)  
-    Fused:    ████████████████████████  (smooth AND accurate!)
-    ```
-    """)
-    
-    st.markdown("""
-    ### The Kalman Filter Loop
-    
-    ```
+    st.subheader("The Kalman Filter Loop")
+    st.code("""
     ┌─────────────┐              ┌─────────────┐
     │   PREDICT   │  ─────────►  │   UPDATE    │
     │  (Odometry) │              │  (Camera)   │
@@ -277,19 +229,16 @@ with tab3:
     └─────────────┘              └─────────────┘
            ▲                            │
            └────────────────────────────┘
-    ```
-    
-    ### Key Equations
-    
-    **Kalman Gain**: `K = P / (P + R)`
-    
-    - K ≈ 1 → Trust sensor (camera) more
-    - K ≈ 0 → Trust prediction (odometry) more
-    
-    **State Update**: `x = x + K × (measurement - x)`
     """)
     
-    st.info("💡 **Tip**: Play with the parameters in the other tabs to see how Q and R affect the filter!")
+    st.subheader("Key Equations")
+    st.latex(r"K = \frac{P}{P + R}")
+    st.markdown("- **K ≈ 1**: Trust measurement (camera)")
+    st.markdown("- **K ≈ 0**: Trust prediction (odometry)")
+    
+    st.latex(r"x_{new} = x + K \times (measurement - x)")
+    
+    st.info("💡 Go to the other tabs and adjust parameters to see these concepts in action!")
 
 # === SIDEBAR ===
 st.sidebar.title("About")
@@ -298,16 +247,16 @@ st.sidebar.markdown("""
 
 For VISST School robotics students.
 
-Learn how robots combine multiple sensors to know where they are!
+---
+
+**Features:**
+- 📊 Kalman Filter demo
+- 🎯 Particle Filter demo
+- 📚 Concept explanations
+
+**No internet required!**
 
 ---
 
-**Demos:**
-- 📊 Kalman Filter
-- 🎯 Particle Filter  
-- 🔀 Sensor Fusion Concept
-
----
-
-*by Grigory Artazyan and Claude*
+*by Grigory Artazyan & Claude*
 """)
