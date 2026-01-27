@@ -99,9 +99,10 @@ The filter automatically decides how much to trust each sensor based on their re
 
 ### Interactive Demos
 
-- **simulation.py** - See fusion beat single sensors
-- **localization_game.py** - Control a robot with arrow keys, watch sensors work
-- **particle_demo.py** - Visualize particle filter localization
+- **streamlit_app.py** - Web-based interactive demo (recommended!)
+- **simulation.py** - Command-line fusion demo
+- **localization_game.py** - Control a robot with arrow keys
+- **particle_demo.py** - Particle filter visualization
 
 ---
 
@@ -110,7 +111,12 @@ The filter automatically decides how much to trust each sensor based on their re
 ```
 git clone https://github.com/GrigoryArtazyan/sensor-fusion-workshop.git
 cd sensor-fusion-workshop
-pip install numpy matplotlib
+pip install -r requirements.txt
+
+# Run the interactive web app (recommended!)
+streamlit run src/streamlit_app.py
+
+# Or run individual demos
 python src/simulation.py
 ```
 
