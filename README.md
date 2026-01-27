@@ -25,11 +25,24 @@ Every sensor lies a little bit:
 
 ## The Solution: Sensor Fusion
 
-Combine them to get the best of both!
+**Sensor fusion** is a filtering technique that combines multiple sensors to get better accuracy than any single sensor alone.
+
+### Why does combining sensors work?
+
+1. **Complementary weaknesses** - IMU drifts but camera doesn't. Camera is noisy but IMU isn't. They cover each other's flaws!
+
+2. **Noise cancellation** - When IMU says "10.2m" and camera says "9.8m", the average (10.0m) is often closer to truth.
+
+3. **Redundancy** - If camera is blocked, IMU keeps tracking. When camera returns, it corrects the drift.
 
 ```
-Low noise + High drift    +    High noise + No drift    =    Best estimate!
-     (IMU)                        (Camera)
+LOW NOISE + HIGH DRIFT      HIGH NOISE + NO DRIFT
+   (IMU, Odometry)      +     (Camera, AprilTags)
+         │                          │
+         └────────────┬─────────────┘
+                      ▼
+            LOW NOISE + NO DRIFT
+               (Best of both!)
 ```
 
 <p align="center">
