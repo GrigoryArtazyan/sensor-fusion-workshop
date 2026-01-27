@@ -256,7 +256,12 @@ with tab3:
     **Combined**: Low noise + No drift = Best of both!
     """)
     
-    st.image("images/localization_Gemini_Generate.png", caption="Sensor Fusion Visualization")
+    import os
+    img_path = os.path.join(os.path.dirname(__file__), "..", "images", "localization_Gemini_Generate.png")
+    if os.path.exists(img_path):
+        st.image(img_path, caption="Sensor Fusion Visualization")
+    else:
+        st.info("Visualization image not found - run from project root directory")
     
     st.markdown("""
     ### The Kalman Filter Loop
