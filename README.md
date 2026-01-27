@@ -74,21 +74,11 @@ A two-step loop that runs continuously:
 
 ---
 
-## Quick Start
+## Try It Live
 
-```bash
-# Clone the repository
-git clone https://github.com/GrigoryArtazyan/sensor-fusion-workshop.git
-cd sensor-fusion-workshop
+**[Launch Interactive Demo](https://sensorfusionworkshop.streamlit.app/)**
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Launch the interactive web app
-streamlit run src/streamlit_app.py
-```
-
-Then open **http://localhost:8501** in your browser.
+Play with Kalman filters and sensor fusion in your browser - no installation required!
 
 ---
 
