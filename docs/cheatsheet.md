@@ -1,92 +1,53 @@
-# Kalman Filter Cheatsheet for FRC
+# Sensor Fusion Cheatsheet
 
 ## The Core Concept
 
 ```
-LOW NOISE + HIGH DRIFT     HIGH NOISE + LOW DRIFT
-    (IMU, Odometry)    +    (Camera/AprilTags)
-           │                        │
-           └──────────┬─────────────┘
-                      ▼
-            LOW NOISE + LOW DRIFT
-               (Fused result!)
+LOW NOISE + HIGH DRIFT     HIGH NOISE + NO DRIFT
+   (IMU, Encoders)     +    (Camera, AprilTags)
+          │                        │
+          └──────────┬─────────────┘
+                     ▼
+           LOW NOISE + NO DRIFT
+              (Fused result!)
 ```
 
----
-
-## The Predict-Update Loop
+## Kalman Filter Loop
 
 ```
-┌──────────────┐         ┌──────────────┐
-│   PREDICT    │ ──────► │    UPDATE    │
-│  (Odometry)  │         │  (AprilTag)  │
-│ uncertainty↑ │         │ uncertainty↓ │
-└──────────────┘         └──────────────┘
-        ▲                       │
-        └───────────────────────┘
+PREDICT (motion) ──► UPDATE (sensor) ──► PREDICT ──► ...
+   uncertainty ↑       uncertainty ↓
 ```
 
-## Key Variables
+## Key Equations
 
-| Variable | WPILib Equivalent | Meaning |
-|----------|-------------------|---------|
-| `x` | Pose2d | Position estimate |
-| `P` | (internal) | Uncertainty |
-| `Q` | stateStdDevs | Trust in odometry |
-| `R` | visionStdDevs | Trust in vision |
-| `K` | (internal) | Kalman gain |
-
-## The Equations
-
-**Predict (odometry update):**
 ```
-x = x + velocity × dt
-P = P + Q              ← uncertainty grows
+Kalman Gain:  K = P / (P + R)
+Update:       x = x + K × (measurement - x)
 ```
 
-**Update (AprilTag visible):**
-```
-K = P / (P + R)        ← Kalman gain
-x = x + K × (vision - x)
-P = (1 - K) × P        ← uncertainty shrinks
-```
+- **K ≈ 1**: Trust sensor more
+- **K ≈ 0**: Trust prediction more
 
-## Kalman Gain Intuition
+## Tuning
 
-- **K ≈ 1**: Trust AprilTag (haven't seen tags in a while)
-- **K ≈ 0**: Trust odometry (just updated with vision)
+| Parameter | What it does |
+|-----------|--------------|
+| Q (process noise) | Higher = trust sensors more |
+| R (measurement noise) | Higher = trust prediction more |
 
-## FRC Sensor Characteristics
+## Sensor Characteristics
 
-| Sensor | Noise | Drift | Rate | Role in Fusion |
-|--------|-------|-------|------|----------------|
-| **IMU/Gyro** | Very Low | High | 200+ Hz | Predict (motion) |
-| **Encoders** | Low | High (slip) | 50-100 Hz | Predict (motion) |
-| **AprilTags** | Medium | None | 30-90 Hz | Update (absolute) |
-| **LiDAR** | Low | None | 10-40 Hz | Update (absolute) |
+| Sensor | Noise | Drift | Role |
+|--------|-------|-------|------|
+| IMU | Low | High | Predict |
+| Encoders | Low | High | Predict |
+| AprilTags | High | None | Update |
+| Camera | High | None | Update |
 
-**Key insight:** Fuse drifting sensors (IMU, encoders) with absolute sensors (AprilTags, LiDAR)
-
-## WPILib Standard Deviations
+## WPILib Equivalent
 
 ```java
-// Odometry trust (state)
-VecBuilder.fill(0.1, 0.1, 0.1)  // x, y, theta
-
-// Vision trust
-VecBuilder.fill(0.5, 0.5, 0.5)  // x, y, theta
+VecBuilder.fill(0.1, 0.1, 0.1)  // stateStdDevs = Q
+VecBuilder.fill(0.5, 0.5, 0.5)  // visionStdDevs = R
 ```
-
-**Tuning:**
-- Robot drifts → Lower vision std devs
-- Jumpy with tags → Raise vision std devs
-- Good encoders → Lower state std devs
-
-## Quick Reference
-
-| Problem | Solution |
-|---------|----------|
-| Robot teleports when seeing tags | Raise vision std devs |
-| Robot drifts in auto | Lower vision std devs |
-| Pose is jittery | Raise vision std devs |
-| Slow to correct | Lower vision std devs |

@@ -1,18 +1,15 @@
 # Python
 __pycache__/
 *.py[cod]
-*.so
 env/
 venv/
-.venv/
 
 # IDE
 .idea/
 .vscode/
-*.swp
 
 # OS
 .DS_Store
 
-# Output
-results.png
+# Temp output (keep images/ folder)
+src/results.png
