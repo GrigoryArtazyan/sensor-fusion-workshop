@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Kalman_filter_animation.gif/220px-Kalman_filter_animation.gif" alt="Kalman Filter Animation" width="300">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Kalman_filter_animation.gif" alt="Kalman Filter Animation" width="300">
   <br>
   <sub>Kalman filter tracking through noisy measurements</sub>
 </p>
@@ -120,7 +120,7 @@ sensor-fusion-workshop/
 <p align="center">
   <img src="images/lidar.gif" alt="Sensor Mapping" width="500">
   <br>
-  <sub>Real-time sensor mapping and localization in action</sub>
+  <sub>Real-time sensor mapping and localization in action with Lidar</sub>
 </p>
 
 ---
