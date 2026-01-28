@@ -6,9 +6,9 @@
 </p>
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Kalman_filter_animation.gif/220px-Kalman_filter_animation.gif" alt="Kalman Filter Animation" width="300">
+  <img src="images/lidar.gif" alt="Sensor Visualization" width="400">
   <br>
-  <sub>Kalman filter tracking through noisy measurements</sub>
+  <sub>Real-time sensor mapping and localization</sub>
 </p>
 
 ---
