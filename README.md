@@ -46,9 +46,7 @@ Combine sensors with **opposite weaknesses**:
 | **Drift** | High | None |
 | **Combined** | **Low** | **None** |
 
-<p align="center">
-  <img src="images/localization_Gemini_Generate.png" alt="Sensor Fusion" width="600">
-</p>
+
 
 > **Blue** = Odometry (drifts over time) | **Green** = Camera (noisy but accurate) | **Red** = Fused (best of both!)
 
@@ -118,17 +116,10 @@ sensor-fusion-workshop/
 - [WPILib Pose Estimation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html)
 - [AprilTag Documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html)
 
----
-
-<p align="center">
-  <img src="images/lidar.gif" alt="Sensor Mapping" width="500">
-  <br>
-  <sub>Real-time sensor mapping and localization in action with Lidar</sub>
-</p>
 
 ---
 
 <p align="center">
-  <strong>VISST School Workshop</strong><br>
+  <strong>Workshop</strong><br>
   <sub>by Grigory Artazyan & Claude</sub>
 </p>
