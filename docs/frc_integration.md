@@ -14,25 +14,29 @@ These fuse **odometry + gyro** with **AprilTag vision** automatically.
 
 ## Basic Usage
 
-```java
+```cpp
+#include <frc/estimator/SwerveDrivePoseEstimator.h>
+#include <frc/geometry/Pose2d.h>
+#include <wpi/array.h>
+
 // Create pose estimator
-SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
+frc::SwerveDrivePoseEstimator<4> poseEstimator{
     kinematics,
-    gyro.getRotation2d(),
-    getModulePositions(),
-    new Pose2d(),
-    VecBuilder.fill(0.1, 0.1, 0.1),  // Trust in odometry
-    VecBuilder.fill(0.5, 0.5, 0.5)   // Trust in vision
-);
+    gyro.GetRotation2d(),
+    GetModulePositions(),
+    frc::Pose2d{},
+    {0.1, 0.1, 0.1},  // stateStdDevs - Trust in odometry
+    {0.5, 0.5, 0.5}   // visionStdDevs - Trust in vision
+};
 
 // Every loop: PREDICT with odometry
-poseEstimator.update(gyro.getRotation2d(), getModulePositions());
+poseEstimator.Update(gyro.GetRotation2d(), GetModulePositions());
 
 // When AprilTag visible: UPDATE with vision
-poseEstimator.addVisionMeasurement(visionPose, timestamp);
+poseEstimator.AddVisionMeasurement(visionPose, timestamp);
 
 // Get fused result
-Pose2d robotPose = poseEstimator.getEstimatedPosition();
+frc::Pose2d robotPose = poseEstimator.GetEstimatedPosition();
 ```
 
 ## Tuning the Standard Deviations
