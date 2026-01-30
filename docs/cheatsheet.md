@@ -12,6 +12,11 @@ LOW NOISE + HIGH DRIFT     HIGH NOISE + NO DRIFT
               (Fused result)
 ```
 
+![Sensor Fusion Path](../images/circle_path.png)
+• IMU provides smooth, high-frequency updates but drifts over time
+• Camera gives absolute position but with measurement noise
+• Fusion uses algorithms like Kalman filtering to combine both
+• Result: Smooth tracking without long-term drift
 
 ## Kalman Filter Loop
 
