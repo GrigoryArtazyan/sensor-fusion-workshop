@@ -38,12 +38,19 @@ Update:       x = x + K × (measurement - x)
 
 ## Sensor Characteristics
 
+**Motion Sensors** (for PREDICT step) - low noise, high drift:
+- IMU / Gyro
+- Wheel Encoders / Odometry
+- Optical Tracking Sensor
+
+**Position Sensors** (for UPDATE step) - high noise, no drift:
+- Camera / AprilTags
+
 | Sensor | Noise | Drift | Role |
 |--------|-------|-------|------|
-| IMU | Low | High | Predict |
-| Encoders | Low | High | Predict |
-| AprilTags | High | None | Update |
-| Camera | High | None | Update |
+| IMU / Gyro | Low | High | Predict |
+| Encoders / Odometry | Low | High | Predict |
+| AprilTags / Camera | High | None | Update |
 
 ## WPILib Equivalent
 
