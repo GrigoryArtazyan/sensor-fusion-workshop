@@ -48,8 +48,6 @@ Combine sensors with **opposite weaknesses**:
 
 
 
-> **Blue** = Odometry (drifts over time) | **Green** = Camera (noisy but accurate) | **Red** = Fused (best of both!)
-
 ---
 
 ## The Kalman Filter
@@ -94,8 +92,7 @@ sensor-fusion-workshop/
 │   ├── cheatsheet.md         # Quick reference
 │   ├── frc_integration.md    # WPILib code examples
 │   └── sensor_fusion_theory.md
-├── notes.md                  # Teaching guide
-└── images/
+└── notes.md                  # Teaching guide
 ```
 
 ---
