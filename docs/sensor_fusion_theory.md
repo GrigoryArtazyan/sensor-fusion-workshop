@@ -14,7 +14,7 @@ Combine sensors with **opposite weaknesses**:
 ```
 IMU:    ████████████████░░░░░░░░░░░░░░░░  (good short-term, drifts long-term)
 Camera: ░░░░████░░░░████░░░░████░░░░████  (intermittent but accurate)
-FUSED:  ████████████████████████████████  (best of both!)
+FUSED:  ████████████████████████████████  (best of both)
 ```
 
 ## Why Combining Works
@@ -23,7 +23,9 @@ FUSED:  ████████████████████████
 2. **Noise reduction** - Independent errors partially cancel out
 3. **Redundancy** - If one sensor fails, others keep working
 
-## The Kalman Filter Approach
+
+![Kalman Filter](../images/kalman_fliter.png)
+*Source: [YouTube](https://www.youtube.com/watch?v=0yICGqriN3g)*
 
 The Kalman filter alternates between two steps:
 
