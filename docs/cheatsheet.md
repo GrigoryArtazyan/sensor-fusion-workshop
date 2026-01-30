@@ -9,8 +9,9 @@ LOW NOISE + HIGH DRIFT     HIGH NOISE + NO DRIFT
           └──────────┬─────────────┘
                      ▼
            LOW NOISE + NO DRIFT
-              (Fused result!)
+              (Fused result)
 ```
+
 
 ## Kalman Filter Loop
 
