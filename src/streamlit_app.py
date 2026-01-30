@@ -73,6 +73,19 @@ tab1, tab2, tab3 = st.tabs(["📊 Kalman Filter", "🎯 Particle Filter", "📚 
 # === TAB 1: KALMAN FILTER ===
 with tab1:
     st.header("Kalman Filter Demo")
+    
+    with st.expander("📖 How to Use", expanded=False):
+        st.markdown("""
+        **Try these experiments:**
+        1. **Increase Odometry drift** → Watch blue line diverge from truth
+        2. **Increase Camera noise** → Green dots scatter more
+        3. **Increase Camera interval** → Fewer updates, uncertainty grows longer
+        4. **Adjust Q (process noise)** → Higher = filter reacts faster but noisier
+        5. **Adjust R (measurement noise)** → Higher = filter ignores camera more
+        
+        **Goal:** Can you make fused estimate *worse* than odometry? (Hint: it's hard!)
+        """)
+    
     st.markdown("Adjust parameters and see results instantly!")
     
     col1, col2 = st.columns([1, 2])
@@ -140,14 +153,32 @@ with tab1:
         odom_rmse = np.sqrt(np.mean((odom - truth)**2))
         fused_rmse = np.sqrt(np.mean((fused - truth)**2))
         
+        # Metrics with color-coded improvement
+        improvement = (1 - fused_rmse/odom_rmse) * 100
+        
         c1, c2, c3 = st.columns(3)
         c1.metric("Odometry RMSE", f"{odom_rmse:.2f} m")
-        c2.metric("Fused RMSE", f"{fused_rmse:.2f} m")
-        c3.metric("Improvement", f"{(1 - fused_rmse/odom_rmse)*100:.0f}%")
+        c2.metric("Fused RMSE", f"{fused_rmse:.2f} m", delta=f"{-improvement:.0f}%" if improvement > 0 else f"+{-improvement:.0f}%", delta_color="inverse")
+        if improvement > 0:
+            c3.metric("Improvement", f"{improvement:.0f}%", delta="Fusion wins!", delta_color="normal")
+        else:
+            c3.metric("Improvement", f"{improvement:.0f}%", delta="Odometry wins", delta_color="inverse")
 
 # === TAB 2: PARTICLE FILTER ===
 with tab2:
     st.header("Particle Filter Demo")
+    
+    with st.expander("📖 How to Use", expanded=False):
+        st.markdown("""
+        **Try these experiments:**
+        1. **Fewer particles** → Less accurate, but faster
+        2. **More particles** → More accurate, shows convergence better
+        3. **Increase motion noise** → Particles spread out more during predict
+        4. **Increase sensor noise** → Takes longer to converge
+        
+        **Watch:** Blue particles cluster around green (true position) over time!
+        """)
+    
     st.markdown("Watch particles converge to the true position!")
     
     col1, col2 = st.columns([1, 2])
@@ -245,8 +276,6 @@ st.sidebar.title("About")
 st.sidebar.markdown("""
 **Sensor Fusion Workshop**
 
-For VISST School robotics students.
-
 ---
 
 **Features:**
@@ -254,7 +283,6 @@ For VISST School robotics students.
 - 🎯 Particle Filter demo
 - 📚 Concept explanations
 
-**No internet required!**
 
 ---
 

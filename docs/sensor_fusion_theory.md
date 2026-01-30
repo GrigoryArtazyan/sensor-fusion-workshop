@@ -48,4 +48,3 @@ Uncert:    0.1 → 0.2 → 0.3 → 0.4 → 0.1 → 0.2
 
 > Fuse **low-noise/high-drift** sensors with **high-noise/no-drift** sensors to get **low-noise AND no-drift**.
 
-This is exactly what your robot needs!
