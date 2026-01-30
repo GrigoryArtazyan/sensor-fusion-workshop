@@ -50,7 +50,7 @@ Combine sensors with **opposite weaknesses**:
   <img src="images/localization_Gemini_Generate.png" alt="Sensor Fusion" width="600">
 </p>
 
-> **Blue** = Camera (noisy but accurate) | **Red** = IMU (smooth but drifts) | **Green** = Fused (best of both!)
+> **Blue** = Odometry (drifts over time) | **Green** = Camera (noisy but accurate) | **Red** = Fused (best of both!)
 
 ---
 
@@ -88,12 +88,15 @@ Play with Kalman filters and sensor fusion in your browser - no installation req
 sensor-fusion-workshop/
 ├── src/
 │   ├── streamlit_app.py      # Interactive web demo (recommended)
+│   ├── kalman_filter.py      # Core algorithm explained
 │   ├── simulation.py         # Command-line demo
 │   ├── localization_game.py  # Arrow-key robot game
 │   └── particle_demo.py      # Particle filter visualization
 ├── docs/
 │   ├── cheatsheet.md         # Quick reference
-│   └── frc_integration.md    # WPILib code examples
+│   ├── frc_integration.md    # WPILib code examples
+│   └── sensor_fusion_theory.md
+├── notes.md                  # Teaching guide
 └── images/
 ```
 
