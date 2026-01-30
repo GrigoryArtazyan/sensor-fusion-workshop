@@ -1,26 +1,14 @@
 # Sensor Fusion Workshop
 
-<p align="center">
-  <strong>A hands-on workshop for VISST School robotics students</strong><br>
-  <em>Learn how robots combine multiple sensors to know where they are!</em>
-</p>
+**A hands-on workshop for VISST School robotics students**
 
-<p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Kalman_filter_animation.gif" alt="Kalman Filter Animation" width="300">
-  <br>
-  <sub>Kalman filter tracking through noisy measurements</sub>
-</p>
+Learn how robots combine multiple sensors to know where they are!
 
 ---
 
-## Overview
+## Try It Live
 
-| | |
-|---|---|
-| **Duration** | 1 hour |
-| **Audience** | Robotics students |
-| **Prerequisites** | Basic Python |
-| **Topics** | Sensor fusion, Kalman filter, Particle filter |
+**[Launch Interactive Demo](https://sensorfusionworkshop.streamlit.app/)**
 
 ---
 
@@ -32,11 +20,9 @@
 |--------|----------|----------|
 | IMU / Gyro | Smooth, fast | Drifts over time |
 | Wheel Encoders | Always available | Wheel slip |
-| Camera / AprilTags | Absolute position | Noisy, needs line-of-sight |
+| Camera / AprilTags | Absolute position | Noisy |
 
----
-
-## The Solution: Sensor Fusion
+## The Solution
 
 Combine sensors with **opposite weaknesses**:
 
@@ -46,58 +32,18 @@ Combine sensors with **opposite weaknesses**:
 | **Drift** | High | None |
 | **Combined** | **Low** | **None** |
 
-
-
 ---
 
 ## The Kalman Filter
 
-A two-step loop that runs continuously:
-
 ```
-┌─────────────┐              ┌─────────────┐
-│   PREDICT   │  ─────────►  │   UPDATE    │
-│  (Odometry) │              │  (Camera)   │
-│ uncertainty │              │ uncertainty │
-│    GROWS    │              │   SHRINKS   │
-└─────────────┘              └─────────────┘
-       ▲                            │
-       └────────────────────────────┘
-```
-
-**PREDICT**: Use motion sensors - uncertainty grows  
-**UPDATE**: Use position sensors - uncertainty shrinks
-
----
-
-## Try It Live
-
-**[Launch Interactive Demo](https://sensorfusionworkshop.streamlit.app/)**
-
-Play with Kalman filters and sensor fusion in your browser - no installation required!
-
----
-
-## Contents
-
-```
-sensor-fusion-workshop/
-├── src/
-│   ├── streamlit_app.py      # Interactive web demo (recommended)
-│   ├── kalman_filter.py      # Core algorithm explained
-│   ├── simulation.py         # Command-line demo
-│   ├── localization_game.py  # Arrow-key robot game
-│   └── particle_demo.py      # Particle filter visualization
-├── docs/
-│   ├── cheatsheet.md         # Quick reference
-│   ├── frc_integration.md    # WPILib code examples
-│   └── sensor_fusion_theory.md
-└── notes.md                  # Teaching guide
+PREDICT (odometry) ──► UPDATE (camera) ──► PREDICT ──► ...
+  uncertainty ↑          uncertainty ↓
 ```
 
 ---
 
-## Workshop Agenda
+## Workshop Agenda (1 hour)
 
 | Time | Topic |
 |------|-------|
@@ -110,13 +56,9 @@ sensor-fusion-workshop/
 
 ## Resources
 
-- [WPILib Pose Estimation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html)
-- [AprilTag Documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html)
-
+- [WPILib Pose Estimators](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html)
+- [AprilTag Intro](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html)
 
 ---
 
-<p align="center">
-  <strong>Workshop</strong><br>
-  <sub>by Grigory Artazyan & Claude</sub>
-</p>
+*Workshop by Grigory Artazyan & Claude*
